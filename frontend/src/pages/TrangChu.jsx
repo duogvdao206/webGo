@@ -1,21 +1,36 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { lay_san_pham_trang_chu } from '../services/api/api_san_pham';
+import { lay_cau_hinh } from '../services/api/api_cau_hinh';
 import { ShoppingBag, ArrowRight, ShieldCheck, Heart, Truck, Award, Star } from 'lucide-react';
 import { toast } from 'react-toastify';
 
 const TrangChu = () => {
   const navigate = useNavigate();
   const [danh_sach_san_pham, set_danh_sach_san_pham] = useState([]);
+  const [config, setConfig] = useState({
+    hero_title: 'Nét Đẹp Tự Nhiên Trong Ngôi Nhà Bạn',
+    hero_subtitle: 'Khám phá bộ sưu tập nội thất tre gỗ tinh tế, mang lại sự ấm áp và bình yên cho không gian sống.',
+    hero_banner: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?q=80&w=1920',
+    about_title: 'Nâng Tầm Không Gian Sống Bằng Đồ Gỗ Thủ Công',
+    about_desc: 'Tại Tre Gỗ Việt, chúng tôi tin rằng mỗi khối gỗ, mỗi thanh tre đều mang trong mình một linh hồn. Qua bàn tay khéo léo của các nghệ nhân làng nghề, chúng tôi biến những vật liệu thô sơ thành các tác phẩm nghệ thuật có giá trị sử dụng cao.',
+    about_img: 'https://images.unsplash.com/photo-1596683764394-b7437ef46e1e?q=80&w=800'
+  });
   const [dang_tai, set_dang_tai] = useState(true);
 
   useEffect(() => {
     const tai_du_lieu = async () => {
       try {
-        const du_lieu = await lay_san_pham_trang_chu();
-        set_danh_sach_san_pham(du_lieu);
+        const [du_lieu_sp, du_lieu_config] = await Promise.all([
+          lay_san_pham_trang_chu(),
+          lay_cau_hinh()
+        ]);
+        set_danh_sach_san_pham(du_lieu_sp);
+        if (Object.keys(du_lieu_config).length > 0) {
+          setConfig(prev => ({ ...prev, ...du_lieu_config }));
+        }
       } catch (loi) {
-        toast.error("Không thể kết nối đến máy chủ.");
+        console.error("Lỗi tải trang chủ:", loi);
       } finally {
         set_dang_tai(false);
       }
@@ -39,7 +54,7 @@ const TrangChu = () => {
     <div style={{ paddingBottom: '80px' }}>
       {/* Hero Section */}
       <section style={{ 
-        background: 'linear-gradient(rgba(45, 36, 28, 0.6), rgba(45, 36, 28, 0.6)), url("https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?q=80&w=1920") center/cover',
+        background: `linear-gradient(rgba(45, 36, 28, 0.6), rgba(45, 36, 28, 0.6)), url("${config.hero_banner}") center/cover`,
         borderRadius: '24px',
         padding: '120px 40px',
         color: 'white',
@@ -47,8 +62,8 @@ const TrangChu = () => {
         marginBottom: '80px',
         boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
       }}>
-        <h1 style={{ fontSize: '4rem', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1' }}>Tre Gỗ Việt <br/> Tinh Hoa Đất Việt</h1>
-        <p style={{ fontSize: '1.25rem', opacity: 0.95, maxWidth: '700px', margin: '0 auto 40px' }}>Chuyên cung cấp các sản phẩm nội thất từ tre và gỗ tự nhiên cao cấp, mang đến vẻ đẹp mộc mạc nhưng đầy sang trọng cho ngôi nhà của bạn.</p>
+        <h1 style={{ fontSize: '4rem', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1' }}>{config.hero_title}</h1>
+        <p style={{ fontSize: '1.25rem', opacity: 0.95, maxWidth: '700px', margin: '0 auto 40px' }}>{config.hero_subtitle}</p>
         <button onClick={() => navigate('/san-pham')} className="btn btn-primary" style={{ padding: '18px 36px', fontSize: '1.1rem', borderRadius: '30px' }}>
           Xem Bộ Sưu Tập <ArrowRight size={20} />
         </button>
@@ -73,7 +88,7 @@ const TrangChu = () => {
       {/* Giới thiệu về Shop */}
       <section style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '60px', alignItems: 'center', marginBottom: '100px' }}>
         <div style={{ position: 'relative' }}>
-          <img src="https://images.unsplash.com/photo-1596683764394-b7437ef46e1e?q=80&w=800" alt="About" style={{ width: '100%', borderRadius: '24px', boxShadow: '20px 20px 0px var(--primary-color)' }} />
+          <img src={config.about_img} alt="About" style={{ width: '100%', borderRadius: '24px', boxShadow: '20px 20px 0px var(--primary-color)' }} />
           <div style={{ position: 'absolute', bottom: '-30px', right: '-30px', background: '#fff', padding: '30px', borderRadius: '20px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', maxWidth: '250px' }}>
             <h5 style={{ color: 'var(--primary-color)', fontSize: '2rem', fontWeight: '800' }}>15+</h5>
             <p style={{ fontWeight: '600' }}>Năm kinh nghiệm trong ngành đồ mỹ nghệ</p>
@@ -81,9 +96,9 @@ const TrangChu = () => {
         </div>
         <div>
           <h4 style={{ color: 'var(--primary-color)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '16px' }}>Về chúng tôi</h4>
-          <h2 style={{ fontSize: '2.5rem', marginBottom: '24px', color: 'var(--text-main)' }}>Nâng Tầm Không Gian Sống Bằng Đồ Gỗ Thủ Công</h2>
+          <h2 style={{ fontSize: '2.5rem', marginBottom: '24px', color: 'var(--text-main)' }}>{config.about_title}</h2>
           <p style={{ color: 'var(--text-light)', fontSize: '1.1rem', lineHeight: '1.8', marginBottom: '24px' }}>
-            Tại Tre Gỗ Việt, chúng tôi tin rằng mỗi khối gỗ, mỗi thanh tre đều mang trong mình một linh hồn. Qua bàn tay khéo léo của các nghệ nhân làng nghề, chúng tôi biến những vật liệu thô sơ thành các tác phẩm nghệ thuật có giá trị sử dụng cao.
+            {config.about_desc}
           </p>
           <ul style={{ listStyle: 'none', padding: 0 }}>
             {['Sử dụng gỗ bền vững, thân thiện môi trường', 'Thiết kế độc quyền, mang bản sắc riêng', 'Gia công tinh xảo đến từng chi tiết'].map(point => (

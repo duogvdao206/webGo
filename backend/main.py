@@ -1,13 +1,20 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 # Trigger reload again
-from controllers import xac_thuc_controller, san_pham_controller, thong_ke_controller
+from fastapi.staticfiles import StaticFiles
+from controllers import xac_thuc_controller, san_pham_controller, thong_ke_controller, upload_controller, cau_hinh_controller
 from configs.database import engine, Base
+from models import san_pham, nguoi_dung, cau_hinh
+
+# Đảm bảo thư mục static/uploads tồn tại
+import os
+if not os.path.exists("static/uploads"):
+    os.makedirs("static/uploads")
 
 # Tạo các bảng trong DB (chỉ dùng cho dev)
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="API Web Gỗ", description="Backend cho dự án web bán đồ tre gỗ")
+app = FastAPI(title="Web Gỗ Tre API")
 
 # Cấu hình CORS
 app.add_middleware(
@@ -18,10 +25,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Phục vụ file tĩnh (ảnh upload)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 # Đăng ký các router
 app.include_router(xac_thuc_controller.router)
 app.include_router(san_pham_controller.router)
 app.include_router(thong_ke_controller.router)
+app.include_router(upload_controller.router)
+app.include_router(cau_hinh_controller.router)
 
 @app.get("/")
 def trang_chu():

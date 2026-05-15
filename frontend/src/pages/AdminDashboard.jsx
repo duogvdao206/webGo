@@ -6,10 +6,126 @@ import { toast } from 'react-toastify';
 import { 
   PlusCircle, Image, AlignLeft, DollarSign, Package, 
   LayoutDashboard, Users, ShoppingCart, Box, BarChart3, 
-  Trash2, Edit, XCircle, List, CheckCircle2 
+  Trash2, Edit, XCircle, List, CheckCircle2, Settings, Home, FileUp 
 } from 'lucide-react';
+import { tai_anh_len } from '../services/api/api_upload';
+import { lay_cau_hinh, cap_nhat_cau_hinh } from '../services/api/api_cau_hinh';
 
 // === CÁC COMPONENT CON (NỘI DUNG TỪNG TRANG) ===
+
+const CauHinhTrangChu = () => {
+  const [config, setConfig] = useState({
+    hero_title: '',
+    hero_subtitle: '',
+    hero_banner: '',
+    about_title: '',
+    about_desc: '',
+    about_img: ''
+  });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await lay_cau_hinh();
+        if (Object.keys(data).length > 0) {
+          setConfig(prev => ({ ...prev, ...data }));
+        }
+      } catch (err) {
+        toast.error('Lỗi khi tải cấu hình');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const handleChange = (e) => setConfig({ ...config, [e.target.name]: e.target.value });
+
+  const handleUpload = async (e, field) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const toastId = toast.loading("Đang tải ảnh lên...");
+    try {
+      const res = await tai_anh_len(file);
+      setConfig({ ...config, [field]: res.url });
+      toast.update(toastId, { render: "Tải ảnh thành công!", type: "success", isLoading: false, autoClose: 3000 });
+    } catch (err) {
+      toast.update(toastId, { render: "Lỗi khi tải ảnh", type: "error", isLoading: false, autoClose: 3000 });
+    }
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await cap_nhat_cau_hinh(config);
+      toast.success('Cập nhật trang chủ thành công!');
+    } catch (err) {
+      toast.error('Lỗi khi lưu cấu hình');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) return <div style={{ textAlign: 'center', padding: '100px' }}><div className="spinner"></div></div>;
+
+  return (
+    <div className="animate-fade-in">
+      <h1 style={{ fontSize: '1.8rem', marginBottom: '24px' }}>Cấu hình trang chủ</h1>
+      <div className="card" style={{ padding: '32px' }}>
+        <form onSubmit={handleSave}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px' }}>
+            {/* Section 1: Hero */}
+            <div>
+              <h3 style={{ marginBottom: '20px', borderBottom: '2px solid var(--primary-color)', display: 'inline-block', pb: '4px' }}>Phần Banner Chính (Hero)</h3>
+              <div className="form-group">
+                <label className="form-label">Tiêu đề chính</label>
+                <input className="form-input" name="hero_title" value={config.hero_title} onChange={handleChange} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Tiêu đề phụ</label>
+                <textarea className="form-input" name="hero_subtitle" value={config.hero_subtitle} onChange={handleChange} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Ảnh Banner (Khuyên dùng 1920x800)</label>
+                <input type="file" onChange={(e) => handleUpload(e, 'hero_banner')} style={{ marginBottom: '10px' }} />
+                <div style={{ height: '150px', borderRadius: '8px', overflow: 'hidden', background: '#eee' }}>
+                  <img src={config.hero_banner} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+              </div>
+            </div>
+
+            {/* Section 2: About */}
+            <div>
+              <h3 style={{ marginBottom: '20px', borderBottom: '2px solid var(--primary-color)', display: 'inline-block', pb: '4px' }}>Phần Giới Thiệu (About)</h3>
+              <div className="form-group">
+                <label className="form-label">Tiêu đề giới thiệu</label>
+                <input className="form-input" name="about_title" value={config.about_title} onChange={handleChange} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Nội dung giới thiệu</label>
+                <textarea className="form-input" style={{ height: '100px' }} name="about_desc" value={config.about_desc} onChange={handleChange} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Ảnh giới thiệu</label>
+                <input type="file" onChange={(e) => handleUpload(e, 'about_img')} style={{ marginBottom: '10px' }} />
+                <div style={{ height: '150px', borderRadius: '8px', overflow: 'hidden', background: '#eee' }}>
+                  <img src={config.about_img} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <button type="submit" className="btn btn-primary" style={{ marginTop: '30px', width: '200px' }} disabled={saving}>
+            {saving ? 'Đang lưu...' : 'Lưu tất cả thay đổi'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
 
 const TongQuan = ({ thong_ke }) => {
   const stats = [
@@ -198,10 +314,31 @@ const FormSanPham = ({ san_pham_dang_sua, form_data, set_form_data, lam_moi_form
             </div>
 
             <div className="form-group">
-              <label className="form-label">URL Hình ảnh</label>
-              <div style={{ position: 'relative' }}>
-                <div style={{ position: 'absolute', top: '50%', left: '16px', transform: 'translateY(-50%)', color: 'var(--text-light)' }}><Image size={18}/></div>
-                <input className="form-input" style={{ paddingLeft: '44px' }} type="url" name="hinh_anh" placeholder="https://..." value={form_data.hinh_anh} onChange={xu_ly_nhap} required />
+              <label className="form-label">Hình ảnh sản phẩm</label>
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                <div style={{ position: 'relative', flex: 1 }}>
+                  <div style={{ position: 'absolute', top: '50%', left: '16px', transform: 'translateY(-50%)', color: 'var(--text-light)' }}><Image size={18}/></div>
+                  <input className="form-input" style={{ paddingLeft: '44px' }} type="text" name="hinh_anh" placeholder="URL ảnh hoặc chọn file bên phải..." value={form_data.hinh_anh} onChange={xu_ly_nhap} required />
+                </div>
+                <label style={{ 
+                  background: 'var(--primary-color)', color: '#fff', padding: '12px 20px', 
+                  borderRadius: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
+                  fontWeight: '600', fontSize: '0.9rem'
+                }}>
+                  <FileUp size={18}/> Tải ảnh
+                  <input type="file" hidden onChange={async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    const toastId = toast.loading("Đang tải ảnh lên...");
+                    try {
+                      const res = await tai_anh_len(file);
+                      set_form_data({ ...form_data, hinh_anh: res.url });
+                      toast.update(toastId, { render: "Tải ảnh thành công!", type: "success", isLoading: false, autoClose: 3000 });
+                    } catch (err) {
+                      toast.update(toastId, { render: "Lỗi tải ảnh", type: "error", isLoading: false, autoClose: 3000 });
+                    }
+                  }} />
+                </label>
               </div>
             </div>
 
@@ -374,8 +511,10 @@ const AdminDashboard = () => {
           <div style={{ margin: '16px 0 8px 12px', fontSize: '0.75rem', fontWeight: '700', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Hệ thống
           </div>
+          <MenuItem icon={<Home size={20}/>} label="Cấu hình trang chủ" active={activeTab === 'home_config'} onClick={() => setActiveTab('home_config')} />
           <MenuItem icon={<ShoppingCart size={20}/>} label="Đơn hàng" active={activeTab === 'don_hang'} onClick={() => setActiveTab('don_hang')} />
           <MenuItem icon={<Users size={20}/>} label="Người dùng" active={activeTab === 'nguoi_dung'} onClick={() => setActiveTab('nguoi_dung')} />
+          <MenuItem icon={<Settings size={20}/>} label="Cài đặt khác" active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
         </nav>
       </div>
 
@@ -407,6 +546,8 @@ const AdminDashboard = () => {
 
         {activeTab === 'don_hang' && <TinhNangDangPhatTrien tieu_de="Quản lý Đơn hàng" />}
         {activeTab === 'nguoi_dung' && <TinhNangDangPhatTrien tieu_de="Quản lý Người dùng" />}
+        {activeTab === 'home_config' && <CauHinhTrangChu />}
+        {activeTab === 'settings' && <TinhNangDangPhatTrien tieu_de="Cài đặt hệ thống" />}
       </div>
       
     </div>
