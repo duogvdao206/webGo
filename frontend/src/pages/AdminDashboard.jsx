@@ -47,7 +47,8 @@ const DanhSachSanPham = ({ set_active_tab, set_san_pham_dang_sua, set_form_data,
       gia: sp.gia,
       mo_ta: sp.mo_ta,
       hinh_anh: sp.hinh_anh,
-      so_luong: sp.so_luong
+      so_luong: sp.so_luong,
+      noi_bat: sp.noi_bat
     });
     set_active_tab('san_pham_form');
   };
@@ -139,10 +140,20 @@ const FormSanPham = ({ san_pham_dang_sua, form_data, set_form_data, lam_moi_form
     set_dang_tai(true);
     try {
       if (san_pham_dang_sua) {
-        await cap_nhat_san_pham(san_pham_dang_sua.id, { ...form_data, gia: Number(form_data.gia), so_luong: Number(form_data.so_luong) });
+        await cap_nhat_san_pham(san_pham_dang_sua.id, { 
+          ...form_data, 
+          gia: Number(form_data.gia), 
+          so_luong: Number(form_data.so_luong),
+          noi_bat: Boolean(form_data.noi_bat)
+        });
         toast.success('Cập nhật sản phẩm thành công!');
       } else {
-        await them_san_pham({ ...form_data, gia: Number(form_data.gia), so_luong: Number(form_data.so_luong) });
+        await them_san_pham({ 
+          ...form_data, 
+          gia: Number(form_data.gia), 
+          so_luong: Number(form_data.so_luong),
+          noi_bat: Boolean(form_data.noi_bat)
+        });
         toast.success('Thêm sản phẩm thành công!');
       }
       lam_moi_form();
@@ -197,6 +208,19 @@ const FormSanPham = ({ san_pham_dang_sua, form_data, set_form_data, lam_moi_form
             <div className="form-group">
               <label className="form-label">Mô tả chi tiết</label>
               <textarea className="form-input" style={{ minHeight: '120px', resize: 'vertical' }} name="mo_ta" value={form_data.mo_ta} onChange={xu_ly_nhap} required />
+            </div>
+
+            <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '10px', background: '#fff9f2', padding: '12px', borderRadius: '8px', border: '1px solid #fed7aa' }}>
+              <input 
+                type="checkbox" 
+                name="noi_bat" 
+                checked={form_data.noi_bat} 
+                onChange={(e) => set_form_data({ ...form_data, noi_bat: e.target.checked })}
+                style={{ width: '20px', height: '20px', accentColor: 'var(--primary-color)' }}
+              />
+              <label className="form-label" style={{ marginBottom: 0, cursor: 'pointer', fontWeight: '600', color: '#8b4513' }}>
+                Đánh dấu là Sản phẩm nổi bật (Hiển thị trang chủ)
+              </label>
             </div>
 
             <div style={{ display: 'flex', gap: '16px', marginTop: '24px' }}>
@@ -274,7 +298,7 @@ const AdminDashboard = () => {
   const [dang_tai_ds, set_dang_tai_ds] = useState(false);
   const [thong_ke, set_thong_ke] = useState(null);
   const [san_pham_dang_sua, set_san_pham_dang_sua] = useState(null);
-  const [form_data, set_form_data] = useState({ ten_san_pham: '', gia: '', mo_ta: '', hinh_anh: '', so_luong: 10 });
+  const [form_data, set_form_data] = useState({ ten_san_pham: '', gia: '', mo_ta: '', hinh_anh: '', so_luong: 10, noi_bat: false });
 
   const tai_thong_ke = async () => {
     try {
@@ -310,7 +334,7 @@ const AdminDashboard = () => {
 
   const lam_moi_form = () => {
     set_san_pham_dang_sua(null);
-    set_form_data({ ten_san_pham: '', gia: '', mo_ta: '', hinh_anh: '', so_luong: 10 });
+    set_form_data({ ten_san_pham: '', gia: '', mo_ta: '', hinh_anh: '', so_luong: 10, noi_bat: false });
   };
 
   if (vai_tro !== 'admin') return null;

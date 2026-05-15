@@ -22,6 +22,7 @@ class TaoSanPham(BaseModel):
     mo_ta: Optional[str] = None
     hinh_anh: Optional[str] = None
     so_luong: int
+    noi_bat: Optional[bool] = False
 
 class ThongTinSanPham(BaseModel):
     id: int
@@ -30,6 +31,7 @@ class ThongTinSanPham(BaseModel):
     mo_ta: Optional[str] = None
     hinh_anh: Optional[str] = None
     so_luong: int
+    noi_bat: bool
 
     class Config:
         from_attributes = True

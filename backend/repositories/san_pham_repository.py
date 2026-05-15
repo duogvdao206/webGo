@@ -8,8 +8,8 @@ def lay_theo_id(db: Session, sp_id: int):
     return db.query(SanPham).filter(SanPham.id == sp_id).first()
 
 def lay_san_pham_trang_chu(db: Session):
-    # Trả về 8 sản phẩm mới nhất làm ví dụ
-    return db.query(SanPham).order_by(SanPham.id.desc()).limit(8).all()
+    # Ưu tiên sản phẩm nổi bật trước, sau đó là mới nhất
+    return db.query(SanPham).order_by(SanPham.noi_bat.desc(), SanPham.id.desc()).limit(8).all()
 
 def cap_nhat(db: Session, sp_id: int, san_pham_data: dict):
     result = db.query(SanPham).filter(SanPham.id == sp_id).update(san_pham_data)
