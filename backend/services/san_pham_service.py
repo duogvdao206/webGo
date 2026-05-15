@@ -20,7 +20,8 @@ def lay_tat_ca_san_pham(db: Session):
             "gia": sp.gia,
             "mo_ta": sp.mo_ta,
             "hinh_anh": sp.hinh_anh,
-            "so_luong": sp.so_luong
+            "so_luong": sp.so_luong,
+            "noi_bat": sp.noi_bat
         })
     return ket_qua
 
@@ -48,7 +49,8 @@ def lay_san_pham_goi_y_trang_chu(db: Session):
             "gia": sp.gia,
             "mo_ta": sp.mo_ta,
             "hinh_anh": sp.hinh_anh,
-            "so_luong": sp.so_luong
+            "so_luong": sp.so_luong,
+            "noi_bat": sp.noi_bat
         })
         
     # Lưu vào cache 1 giờ (3600s)
@@ -68,7 +70,8 @@ def them_san_pham_moi(db: Session, san_pham_data):
         gia=san_pham_data.gia,
         mo_ta=san_pham_data.mo_ta,
         hinh_anh=san_pham_data.hinh_anh,
-        so_luong=san_pham_data.so_luong
+        so_luong=san_pham_data.so_luong,
+        noi_bat=san_pham_data.noi_bat
     )
     db.add(san_pham)
     db.commit()
@@ -89,7 +92,8 @@ def cap_nhat_san_pham(db: Session, sp_id: int, san_pham_data):
         "gia": san_pham_data.gia,
         "mo_ta": san_pham_data.mo_ta,
         "hinh_anh": san_pham_data.hinh_anh,
-        "so_luong": san_pham_data.so_luong
+        "so_luong": san_pham_data.so_luong,
+        "noi_bat": san_pham_data.noi_bat
     }
     
     thanh_cong = san_pham_repository.cap_nhat(db, sp_id, du_lieu)
