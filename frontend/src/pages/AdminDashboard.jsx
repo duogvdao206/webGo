@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { tai_anh_len } from '../services/api/api_upload';
 import { lay_cau_hinh, cap_nhat_cau_hinh } from '../services/api/api_cau_hinh';
+import { lay_danh_sach_don_hang, cap_nhat_trang_thai_don_hang } from '../services/api/api_don_hang';
 
 // === CÁC COMPONENT CON (NỘI DUNG TỪNG TRANG) ===
 
@@ -400,6 +401,117 @@ const FormSanPham = ({ san_pham_dang_sua, form_data, set_form_data, lam_moi_form
   );
 };
 
+const QuanLyDonHang = () => {
+  const [donHangs, setDonHangs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const taiDuLieu = async () => {
+    setLoading(true);
+    try {
+      const data = await lay_danh_sach_don_hang();
+      setDonHangs(data);
+    } catch (err) {
+      toast.error('Lỗi khi tải danh sách đơn hàng');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    taiDuLieu();
+  }, []);
+
+  const handleStatusChange = async (id, status) => {
+    try {
+      await cap_nhat_trang_thai_don_hang(id, status);
+      toast.success('Cập nhật trạng thái thành công');
+      taiDuLieu();
+    } catch (err) {
+      toast.error('Lỗi khi cập nhật trạng thái');
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'Chờ xác nhận': return '#f59e0b';
+      case 'Đã xác nhận': return '#3b82f6';
+      case 'Đang giao': return '#8b5cf6';
+      case 'Đã giao': return '#10b981';
+      case 'Đã hủy': return '#ef4444';
+      default: return '#6b7280';
+    }
+  };
+
+  if (loading) return <div style={{ textAlign: 'center', padding: '100px' }}><div className="spinner"></div></div>;
+
+  return (
+    <div className="animate-fade-in">
+      <h1 style={{ fontSize: '1.8rem', marginBottom: '24px' }}>Quản lý đơn hàng</h1>
+      <div className="card" style={{ padding: '24px', overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--text-light)', fontSize: '0.9rem' }}>
+              <th style={{ padding: '12px 16px' }}>Mã ĐH</th>
+              <th style={{ padding: '12px 16px' }}>Khách hàng</th>
+              <th style={{ padding: '12px 16px' }}>Ngày đặt</th>
+              <th style={{ padding: '12px 16px' }}>Tổng tiền</th>
+              <th style={{ padding: '12px 16px' }}>Trạng thái</th>
+              <th style={{ padding: '12px 16px', textAlign: 'right' }}>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            {donHangs.map((dh) => (
+              <tr key={dh.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                <td style={{ padding: '12px 16px', fontWeight: '700' }}>#{dh.id}</td>
+                <td style={{ padding: '12px 16px' }}>
+                  <div style={{ fontWeight: '500' }}>{dh.ho_ten}</div>
+                  <div style={{ fontSize: '0.8rem', color: '#666' }}>{dh.so_dien_thoai}</div>
+                </td>
+                <td style={{ padding: '12px 16px', fontSize: '0.9rem' }}>
+                  {new Date(dh.ngay_tao).toLocaleString('vi-VN')}
+                </td>
+                <td style={{ padding: '12px 16px', fontWeight: '600' }}>
+                  {dh.tong_tien.toLocaleString()} ₫
+                </td>
+                <td style={{ padding: '12px 16px' }}>
+                  <span style={{ 
+                    padding: '4px 10px', 
+                    borderRadius: '20px', 
+                    fontSize: '0.75rem', 
+                    fontWeight: '700',
+                    background: `${getStatusColor(dh.trang_thai)}20`,
+                    color: getStatusColor(dh.trang_thai)
+                  }}>
+                    {dh.trang_thai}
+                  </span>
+                </td>
+                <td style={{ padding: '12px 16px', textAlign: 'right' }}>
+                  <select 
+                    value={dh.trang_thai} 
+                    onChange={(e) => handleStatusChange(dh.id, e.target.value)}
+                    style={{ padding: '6px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '0.85rem' }}
+                  >
+                    <option value="Chờ xác nhận">Chờ xác nhận</option>
+                    <option value="Đã xác nhận">Đã xác nhận</option>
+                    <option value="Đang giao">Đang giao</option>
+                    <option value="Đã giao">Đã giao</option>
+                    <option value="Đã hủy">Đã hủy</option>
+                  </select>
+                </td>
+              </tr>
+            ))}
+            {donHangs.length === 0 && (
+              <tr>
+                <td colSpan="6" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-light)' }}>Chưa có đơn hàng nào</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
 const TinhNangDangPhatTrien = ({ tieu_de }) => (
   <div className="animate-fade-in" style={{ textAlign: 'center', padding: '60px' }}>
     <h1 style={{ fontSize: '1.8rem', color: 'var(--text-main)', marginBottom: '16px' }}>{tieu_de}</h1>
@@ -544,7 +656,7 @@ const AdminDashboard = () => {
           />
         )}
 
-        {activeTab === 'don_hang' && <TinhNangDangPhatTrien tieu_de="Quản lý Đơn hàng" />}
+        {activeTab === 'don_hang' && <QuanLyDonHang />}
         {activeTab === 'nguoi_dung' && <TinhNangDangPhatTrien tieu_de="Quản lý Người dùng" />}
         {activeTab === 'home_config' && <CauHinhTrangChu />}
         {activeTab === 'settings' && <TinhNangDangPhatTrien tieu_de="Cài đặt hệ thống" />}

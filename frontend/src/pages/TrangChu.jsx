@@ -4,42 +4,36 @@ import { lay_san_pham_trang_chu } from '../services/api/api_san_pham';
 import { lay_cau_hinh } from '../services/api/api_cau_hinh';
 import { ShoppingBag, ArrowRight, ShieldCheck, Heart, Truck, Award, Star } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { useGioHang } from '../components/GioHangContext';
 
 const TrangChu = () => {
+  const { them_vao_gio } = useGioHang();
   const navigate = useNavigate();
   const [danh_sach_san_pham, set_danh_sach_san_pham] = useState([]);
-  const [config, setConfig] = useState({
-    hero_title: 'Nét Đẹp Tự Nhiên Trong Ngôi Nhà Bạn',
-    hero_subtitle: 'Khám phá bộ sưu tập nội thất tre gỗ tinh tế, mang lại sự ấm áp và bình yên cho không gian sống.',
-    hero_banner: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?q=80&w=1920',
-    about_title: 'Nâng Tầm Không Gian Sống Bằng Đồ Gỗ Thủ Công',
-    about_desc: 'Tại Tre Gỗ Việt, chúng tôi tin rằng mỗi khối gỗ, mỗi thanh tre đều mang trong mình một linh hồn. Qua bàn tay khéo léo của các nghệ nhân làng nghề, chúng tôi biến những vật liệu thô sơ thành các tác phẩm nghệ thuật có giá trị sử dụng cao.',
-    about_img: 'https://images.unsplash.com/photo-1596683764394-b7437ef46e1e?q=80&w=800'
-  });
+  const [config, set_config] = useState({});
   const [dang_tai, set_dang_tai] = useState(true);
 
   useEffect(() => {
-    const tai_du_lieu = async () => {
+    const fetch_data = async () => {
       try {
-        const [du_lieu_sp, du_lieu_config] = await Promise.all([
+        const [sp_res, config_res] = await Promise.all([
           lay_san_pham_trang_chu(),
           lay_cau_hinh()
         ]);
-        set_danh_sach_san_pham(du_lieu_sp);
-        if (Object.keys(du_lieu_config).length > 0) {
-          setConfig(prev => ({ ...prev, ...du_lieu_config }));
-        }
-      } catch (loi) {
-        console.error("Lỗi tải trang chủ:", loi);
+        set_danh_sach_san_pham(sp_res);
+        set_config(config_res);
+      } catch (err) {
+        console.error(err);
+        toast.error('Lỗi khi tải dữ liệu trang chủ');
       } finally {
         set_dang_tai(false);
       }
     };
-    tai_du_lieu();
+    fetch_data();
   }, []);
 
   const themVaoGio = (sp) => {
-    toast.success(`Đã thêm ${sp.ten_san_pham} vào giỏ!`);
+    them_vao_gio(sp);
   };
 
   if (dang_tai) {

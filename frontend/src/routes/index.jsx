@@ -7,20 +7,27 @@ import DangKy from '../pages/DangKy';
 import AdminDashboard from '../pages/AdminDashboard';
 import SanPhamPage from '../pages/SanPham';
 import GioiThieuPage from '../pages/GioiThieu';
+import GioHang from '../pages/GioHang';
+import ThanhToan from '../pages/ThanhToan';
+import { GioHangProvider } from '../components/GioHangContext';
 
 const AppRoutes = () => {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<LayoutChinh />}>
-          <Route index element={<TrangChu />} />
-          <Route path="san-pham" element={<SanPhamPage />} />
-          <Route path="gioi-thieu" element={<GioiThieuPage />} />
-          <Route path="dang-nhap" element={<DangNhap />} />
-          <Route path="dang-ky" element={<DangKy />} />
-          <Route path="admin" element={<AdminDashboard />} />
-        </Route>
-      </Routes>
+      <GioHangProvider>
+        <Routes>
+          <Route path="/" element={<LayoutChinh />}>
+            <Route index element={<TrangChu />} />
+            <Route path="san-pham" element={<SanPhamPage />} />
+            <Route path="gioi-thieu" element={<GioiThieuPage />} />
+            <Route path="dang-nhap" element={<DangNhap />} />
+            <Route path="dang-ky" element={<DangKy />} />
+            <Route path="gio-hang" element={<GioHang />} />
+            <Route path="thanh-toan" element={<ThanhToan />} />
+            <Route path="admin" element={<AdminDashboard />} />
+          </Route>
+        </Routes>
+      </GioHangProvider>
     </BrowserRouter>
   );
 };

@@ -1,7 +1,9 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ShoppingCart, User, LogOut, Leaf } from 'lucide-react';
+import { useGioHang } from './GioHangContext';
 
 const DieuHuong = () => {
+  const { tong_so_luong } = useGioHang();
   const navigate = useNavigate();
   const location = useLocation();
   const da_dang_nhap = !!localStorage.getItem('token_truy_cap');
@@ -57,11 +59,44 @@ const DieuHuong = () => {
 
         {/* Auth / Cart */}
         <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-          <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-main)', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', transition: 'var(--transition)' }} 
-                  onMouseOver={(e) => e.currentTarget.style.background = 'var(--bg-color)'}
-                  onMouseOut={(e) => e.currentTarget.style.background = 'none'}>
+          <Link to="/gio-hang" style={{ 
+            position: 'relative',
+            background: 'none', 
+            border: 'none', 
+            cursor: 'pointer', 
+            color: 'var(--text-main)', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            width: '40px', 
+            height: '40px', 
+            borderRadius: '50%', 
+            transition: 'var(--transition)' 
+          }} 
+          onMouseOver={(e) => e.currentTarget.style.background = 'var(--bg-color)'}
+          onMouseOut={(e) => e.currentTarget.style.background = 'none'}>
             <ShoppingCart size={20} />
-          </button>
+            {tong_so_luong > 0 && (
+              <span style={{ 
+                position: 'absolute', 
+                top: '0', 
+                right: '0', 
+                background: 'var(--primary-color)', 
+                color: '#fff', 
+                fontSize: '10px', 
+                fontWeight: '700', 
+                width: '18px', 
+                height: '18px', 
+                borderRadius: '50%', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+              }}>
+                {tong_so_luong}
+              </span>
+            )}
+          </Link>
           
           {da_dang_nhap ? (
             <button onClick={xu_ly_dang_xuat} className="btn" style={{ background: '#fef2f2', color: '#ef4444' }}>

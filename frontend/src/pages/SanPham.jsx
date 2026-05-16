@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import { lay_tat_ca_san_pham } from '../services/api/api_san_pham';
 import { ShoppingBag, Search, Filter, SlidersHorizontal, ArrowUpDown, ChevronRight } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { useGioHang } from '../components/GioHangContext';
 
 const SanPhamPage = () => {
+  const { them_vao_gio } = useGioHang();
   const [danh_sach, set_danh_sach] = useState([]);
   const [dang_tai, set_dang_tai] = useState(true);
   const [tu_khoa, set_tu_khoa] = useState('');
@@ -168,7 +170,7 @@ const SanPhamPage = () => {
                       <button 
                         className="btn-primary" 
                         style={{ padding: '8px', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                        onClick={() => toast.success('Đã thêm vào giỏ hàng!')}
+                        onClick={() => them_vao_gio(sp)}
                       >
                         <ShoppingBag size={18} />
                       </button>
