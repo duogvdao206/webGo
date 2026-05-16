@@ -32,8 +32,10 @@ const ThanhToan = () => {
 
     set_dang_gui(true);
     try {
+      const user_id = localStorage.getItem('user_id');
       const payload = {
         ...form,
+        nguoi_dung_id: user_id ? parseInt(user_id) : null,
         tong_tien,
         chi_tiet: gio_hang.map(item => ({
           san_pham_id: item.id,

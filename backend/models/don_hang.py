@@ -7,6 +7,7 @@ class DonHang(Base):
     __tablename__ = "don_hang"
 
     id = Column(Integer, primary_key=True, index=True)
+    nguoi_dung_id = Column(Integer, ForeignKey("nguoi_dung.id"), nullable=True) # Để nullable=True cho khách vãng lai nếu cần
     ho_ten = Column(Unicode(255), nullable=False)
     so_dien_thoai = Column(String(20), nullable=False)
     dia_chi = Column(Unicode(500), nullable=False)
@@ -15,6 +16,7 @@ class DonHang(Base):
     trang_thai = Column(Unicode(50), default="Chờ xác nhận") # Chờ xác nhận, Đã xác nhận, Đang giao, Đã giao, Đã hủy
     ngay_tao = Column(DateTime, default=datetime.utcnow)
 
+    nguoi_dung = relationship("NguoiDung")
     chi_tiet = relationship("ChiTietDonHang", back_populates="don_hang")
 
 class ChiTietDonHang(Base):

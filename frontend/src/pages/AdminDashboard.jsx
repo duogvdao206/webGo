@@ -6,11 +6,11 @@ import { toast } from 'react-toastify';
 import { 
   PlusCircle, Image, AlignLeft, DollarSign, Package, 
   LayoutDashboard, Users, ShoppingCart, Box, BarChart3, 
-  Trash2, Edit, XCircle, List, CheckCircle2, Settings, Home, FileUp 
+  Trash2, Edit, XCircle, List, CheckCircle2, Settings, Home, FileUp, Eye
 } from 'lucide-react';
 import { tai_anh_len } from '../services/api/api_upload';
 import { lay_cau_hinh, cap_nhat_cau_hinh } from '../services/api/api_cau_hinh';
-import { lay_danh_sach_don_hang, cap_nhat_trang_thai_don_hang } from '../services/api/api_don_hang';
+import { lay_danh_sach_don_hang, cap_nhat_trang_thai_don_hang, huy_don_hang } from '../services/api/api_don_hang';
 
 // === CÁC COMPONENT CON (NỘI DUNG TỪNG TRANG) ===
 
@@ -403,6 +403,7 @@ const FormSanPham = ({ san_pham_dang_sua, form_data, set_form_data, lam_moi_form
 const QuanLyDonHang = () => {
   const [donHangs, setDonHangs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [don_hang_chi_tiet, set_don_hang_chi_tiet] = useState(null);
 
   const taiDuLieu = async () => {
     setLoading(true);
@@ -430,6 +431,18 @@ const QuanLyDonHang = () => {
     }
   };
 
+  const handleCancelOrder = async (id) => {
+    if (window.confirm("Bạn có chắc chắn muốn hủy đơn hàng này?")) {
+      try {
+        await huy_don_hang(id);
+        toast.success("Đã hủy đơn hàng");
+        taiDuLieu();
+      } catch (err) {
+        toast.error("Lỗi khi hủy đơn hàng");
+      }
+    }
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'Chờ xác nhận': return '#f59e0b';
@@ -445,6 +458,68 @@ const QuanLyDonHang = () => {
 
   return (
     <div className="animate-fade-in">
+      {/* Modal chi tiết cho Admin */}
+      {don_hang_chi_tiet && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div className="card" style={{ width: '100%', maxWidth: '700px', maxHeight: '90vh', overflowY: 'auto', padding: '32px', color: '#333' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
+              <h2 style={{ fontWeight: '800' }}>Đơn hàng #DH{don_hang_chi_tiet.id}</h2>
+              <button onClick={() => set_don_hang_chi_tiet(null)} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer' }}>&times;</button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
+              <div style={{ padding: '16px', background: '#f8f9fa', borderRadius: '12px' }}>
+                <h4 style={{ marginBottom: '8px', borderBottom: '1px solid #ddd', pb: '4px' }}>Thông tin khách hàng</h4>
+                <p><strong>Họ tên:</strong> {don_hang_chi_tiet.ho_ten}</p>
+                <p><strong>SĐT:</strong> {don_hang_chi_tiet.so_dien_thoai}</p>
+                <p><strong>Địa chỉ:</strong> {don_hang_chi_tiet.dia_chi}</p>
+                <p><strong>Ngày đặt:</strong> {new Date(don_hang_chi_tiet.ngay_tao).toLocaleString('vi-VN')}</p>
+              </div>
+              <div style={{ padding: '16px', background: '#fff9f2', borderRadius: '12px' }}>
+                <h4 style={{ marginBottom: '8px', borderBottom: '1px solid #ddd', pb: '4px' }}>Trạng thái & Ghi chú</h4>
+                <p><strong>Trạng thái hiện tại:</strong> <span style={{ color: getStatusColor(don_hang_chi_tiet.trang_thai), fontWeight: '700' }}>{don_hang_chi_tiet.trang_thai}</span></p>
+                <p><strong>Ghi chú từ khách:</strong> {don_hang_chi_tiet.ghi_chu || '(Không có)'}</p>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '24px' }}>
+              <h4 style={{ marginBottom: '12px' }}>Danh sách sản phẩm</h4>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ textAlign: 'left', background: '#eee' }}>
+                    <th style={{ padding: '8px' }}>Sản phẩm</th>
+                    <th style={{ padding: '8px' }}>Số lượng</th>
+                    <th style={{ padding: '8px' }}>Đơn giá</th>
+                    <th style={{ padding: '8px' }}>Thành tiền</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {don_hang_chi_tiet.chi_tiet.map((item, idx) => (
+                    <tr key={idx} style={{ borderBottom: '1px solid #eee' }}>
+                      <td style={{ padding: '8px' }}>{item.san_pham?.ten_san_pham}</td>
+                      <td style={{ padding: '8px' }}>{item.so_luong}</td>
+                      <td style={{ padding: '8px' }}>{item.gia_don_vi.toLocaleString()} ₫</td>
+                      <td style={{ padding: '8px', fontWeight: '600' }}>{(item.so_luong * item.gia_don_vi).toLocaleString()} ₫</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div style={{ textAlign: 'right', marginBottom: '24px' }}>
+              <p style={{ fontSize: '1.2rem' }}>Tổng thanh toán: <strong style={{ color: 'var(--primary-color)', fontSize: '1.6rem' }}>{don_hang_chi_tiet.tong_tien.toLocaleString()} ₫</strong></p>
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button onClick={() => set_don_hang_chi_tiet(null)} className="btn" style={{ flex: 1, background: '#eee' }}>Đóng</button>
+              {don_hang_chi_tiet.trang_thai !== 'Đã hủy' && don_hang_chi_tiet.trang_thai !== 'Đã giao' && (
+                <button onClick={() => handleCancelOrder(don_hang_chi_tiet.id)} className="btn" style={{ flex: 1, background: '#fef2f2', color: '#ef4444', border: '1px solid #fee2e2' }}>Hủy đơn hàng này</button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       <h1 style={{ fontSize: '1.8rem', marginBottom: '24px' }}>Quản lý đơn hàng</h1>
       <div className="card" style={{ padding: '24px', overflowX: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
@@ -485,17 +560,25 @@ const QuanLyDonHang = () => {
                   </span>
                 </td>
                 <td style={{ padding: '12px 16px', textAlign: 'right' }}>
-                  <select 
-                    value={dh.trang_thai} 
-                    onChange={(e) => handleStatusChange(dh.id, e.target.value)}
-                    style={{ padding: '6px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '0.85rem' }}
-                  >
-                    <option value="Chờ xác nhận">Chờ xác nhận</option>
-                    <option value="Đã xác nhận">Đã xác nhận</option>
-                    <option value="Đang giao">Đang giao</option>
-                    <option value="Đã giao">Đã giao</option>
-                    <option value="Đã hủy">Đã hủy</option>
-                  </select>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', alignItems: 'center' }}>
+                    <button 
+                      onClick={() => set_don_hang_chi_tiet(dh)}
+                      style={{ padding: '6px 10px', borderRadius: '8px', border: '1px solid #ddd', background: '#fff', cursor: 'pointer', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+                    >
+                      <Eye size={14}/> Chi tiết
+                    </button>
+                    <select 
+                      value={dh.trang_thai} 
+                      onChange={(e) => handleStatusChange(dh.id, e.target.value)}
+                      style={{ padding: '6px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '0.85rem' }}
+                    >
+                      <option value="Chờ xác nhận">Chờ xác nhận</option>
+                      <option value="Đã xác nhận">Đã xác nhận</option>
+                      <option value="Đang giao">Đang giao</option>
+                      <option value="Đã giao">Đã giao</option>
+                      <option value="Đã hủy">Đã hủy</option>
+                    </select>
+                  </div>
                 </td>
               </tr>
             ))}

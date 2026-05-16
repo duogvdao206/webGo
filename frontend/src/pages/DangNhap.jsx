@@ -18,6 +18,7 @@ const DangNhap = () => {
       localStorage.setItem('token_truy_cap', ket_qua.token_truy_cap);
       localStorage.setItem('vai_tro', ket_qua.vai_tro);
       localStorage.setItem('ten_dang_nhap', ket_qua.ten_dang_nhap);
+      localStorage.setItem('user_id', ket_qua.id);
       toast.success('Đăng nhập thành công!');
       setTimeout(() => {
         if (ket_qua.vai_tro === 'admin') {

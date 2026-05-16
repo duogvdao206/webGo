@@ -14,3 +14,18 @@ export const cap_nhat_trang_thai_don_hang = async (id, trang_thai) => {
   const response = await api.put(`/don-hang/${id}/trang-thai?trang_thai=${trang_thai}`);
   return response.data;
 };
+
+export const lay_don_hang_cua_tooi = async () => {
+  const response = await api.get('/don-hang/me');
+  return response.data;
+};
+
+export const huy_don_hang = async (id) => {
+  const response = await api.put(`/don-hang/${id}/huy`);
+  return response.data;
+};
+
+export const lay_chi_tiet_don_hang = async (id) => {
+  const response = await api.get(`/don-hang/${id}`);
+  return response.data;
+};
