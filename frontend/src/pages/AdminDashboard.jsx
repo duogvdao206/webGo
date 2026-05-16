@@ -34,7 +34,7 @@ const CauHinhTrangChu = () => {
           setConfig(prev => ({ ...prev, ...data }));
         }
       } catch (err) {
-        toast.error('Lỗi khi tải cấu hình');
+        toast.error(err.response?.data?.detail || 'Lỗi khi tải cấu hình');
       } finally {
         setLoading(false);
       }
@@ -53,7 +53,7 @@ const CauHinhTrangChu = () => {
       setConfig({ ...config, [field]: res.url });
       toast.update(toastId, { render: "Tải ảnh thành công!", type: "success", isLoading: false, autoClose: 3000 });
     } catch (err) {
-      toast.update(toastId, { render: "Lỗi khi tải ảnh", type: "error", isLoading: false, autoClose: 3000 });
+      toast.update(toastId, { render: err.response?.data?.detail || "Lỗi khi tải ảnh", type: "error", isLoading: false, autoClose: 3000 });
     }
   };
 
@@ -64,7 +64,7 @@ const CauHinhTrangChu = () => {
       await cap_nhat_cau_hinh(config);
       toast.success('Cập nhật trang chủ thành công!');
     } catch (err) {
-      toast.error('Lỗi khi lưu cấu hình');
+      toast.error(err.response?.data?.detail || 'Lỗi khi lưu cấu hình');
     } finally {
       setSaving(false);
     }
@@ -170,14 +170,16 @@ const DanhSachSanPham = ({ set_active_tab, set_san_pham_dang_sua, set_form_data,
     set_active_tab('san_pham_form');
   };
 
-  const xu_ly_xoa = async (id) => {
+  const xu_ly_xoa = async (e, id) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (window.confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
       try {
         await xoa_san_pham(id);
         toast.success('Xóa sản phẩm thành công!');
         tai_du_lieu();
-      } catch (loi) {
-        toast.error('Lỗi khi xóa sản phẩm');
+      } catch (err) {
+        toast.error(err.response?.data?.detail || 'Lỗi khi xóa sản phẩm');
       }
     }
   };
@@ -225,11 +227,11 @@ const DanhSachSanPham = ({ set_active_tab, set_san_pham_dang_sua, set_form_data,
                       <Edit size={18} />
                     </button>
                     <button 
-                      onClick={() => xu_ly_xoa(sp.id)}
+                      onClick={(e) => xu_ly_xoa(e, sp.id)}
                       style={{ padding: '8px', borderRadius: '8px', border: '1px solid #e5e7eb', background: '#fff', cursor: 'pointer', color: '#ef4444' }}
                       title="Xóa"
                     >
-                      <Trash2 size={18} />
+                      <Trash2 size={18} style={{ pointerEvents: 'none' }} />
                     </button>
                   </div>
                 </td>
@@ -256,28 +258,25 @@ const FormSanPham = ({ san_pham_dang_sua, form_data, set_form_data, lam_moi_form
     e.preventDefault();
     set_dang_tai(true);
     try {
+      const payload = { 
+        ...form_data, 
+        gia: Number(form_data.gia), 
+        so_luong: Number(form_data.so_luong),
+        noi_bat: Boolean(form_data.noi_bat)
+      };
+
       if (san_pham_dang_sua) {
-        await cap_nhat_san_pham(san_pham_dang_sua.id, { 
-          ...form_data, 
-          gia: Number(form_data.gia), 
-          so_luong: Number(form_data.so_luong),
-          noi_bat: Boolean(form_data.noi_bat)
-        });
-        toast.success('Cập nhật sản phẩm thành công!');
+        await cap_nhat_san_pham(san_pham_dang_sua.id, payload);
       } else {
-        await them_san_pham({ 
-          ...form_data, 
-          gia: Number(form_data.gia), 
-          so_luong: Number(form_data.so_luong),
-          noi_bat: Boolean(form_data.noi_bat)
-        });
-        toast.success('Thêm sản phẩm thành công!');
+        await them_san_pham(payload);
       }
+      
+      toast.success(san_pham_dang_sua ? 'Cập nhật sản phẩm thành công!' : 'Thêm sản phẩm thành công!');
       lam_moi_form();
       await tai_du_lieu();
       set_active_tab('san_pham_list');
-    } catch (loi) {
-      toast.error(san_pham_dang_sua ? 'Lỗi khi cập nhật' : 'Lỗi khi thêm sản phẩm');
+    } catch (err) {
+      toast.error(err.response?.data?.detail || (san_pham_dang_sua ? 'Lỗi khi cập nhật' : 'Lỗi khi thêm sản phẩm'));
     } finally {
       set_dang_tai(false);
     }
@@ -553,8 +552,9 @@ const AdminDashboard = () => {
     try {
       const data = await lay_thong_ke_tong_quan();
       set_thong_ke(data);
-    } catch (loi) {
-      console.error("Lỗi tải thống kê:", loi);
+    } catch (err) {
+      console.error("Lỗi tải thống kê:", err);
+      // Không hiện toast ở đây để tránh làm phiền người dùng nếu dashboard vẫn hiện được phần khác
     }
   };
 
@@ -563,9 +563,9 @@ const AdminDashboard = () => {
     try {
       const data = await lay_tat_ca_san_pham();
       set_danh_sach(Array.isArray(data) ? data : []);
-    } catch (loi) {
-      console.error("Lỗi tải SP:", loi);
-      toast.error('Không thể kết nối tới máy chủ để tải sản phẩm');
+    } catch (err) {
+      console.error("Lỗi tải SP:", err);
+      toast.error(err.response?.data?.detail || 'Không thể kết nối tới máy chủ để tải sản phẩm');
     } finally {
       set_dang_tai_ds(false);
     }

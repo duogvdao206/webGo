@@ -24,6 +24,12 @@ class TaoSanPham(BaseModel):
     so_luong: int
     noi_bat: Optional[bool] = False
 
+class SanPhamResponse(TaoSanPham):
+    id: int
+
+    class Config:
+        from_attributes = True
+
 class ThongTinSanPham(BaseModel):
     id: int
     ten_san_pham: str
