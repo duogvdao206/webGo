@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException, Request
 import shutil
 import os
 import uuid
@@ -11,7 +11,7 @@ if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
 
 @router.post("/")
-async def upload_image(file: UploadFile = File(...)):
+async def upload_image(request: Request, file: UploadFile = File(...)):
     # Kiểm tra loại file
     if not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="Chỉ cho phép tải lên hình ảnh")
@@ -27,5 +27,6 @@ async def upload_image(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Lỗi khi lưu file: {str(e)}")
         
-    # Trả về URL để truy cập ảnh
-    return {"url": f"http://localhost:8000/static/uploads/{filename}"}
+    # Trả về URL đầy đủ dựa trên request hiện tại
+    base_url = str(request.base_url).rstrip('/')
+    return {"url": f"{base_url}/static/uploads/{filename}"}

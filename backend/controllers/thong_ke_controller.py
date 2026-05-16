@@ -1,34 +1,24 @@
-from fastapi import APIRouter, Depends, HTTPException, Header
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from configs.database import lay_db
 from models.san_pham import SanPham
 from models.nguoi_dung import NguoiDung
-from jose import jwt
-from configs.security import SECRET_KEY, ALGORITHM
+from models.don_hang import DonHang
+from configs.deps import xac_thuc_admin
 
 router = APIRouter(prefix="/api/thong-ke", tags=["Thống kê"])
 
 @router.get("/tong-quan")
-def thong_ke_tong_quan(authorization: str = Header(None), db: Session = Depends(lay_db)):
-    if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Thiếu token xác thực")
-    
-    token = authorization.split(" ")[1]
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        vai_tro = payload.get("vai_tro")
-        if vai_tro != "admin":
-            raise HTTPException(status_code=403, detail="Chỉ admin mới có quyền xem thống kê")
-    except Exception:
-        raise HTTPException(status_code=401, detail="Token không hợp lệ")
-
+def thong_ke_tong_quan(db: Session = Depends(lay_db), _ = Depends(xac_thuc_admin)):
     tong_san_pham = db.query(SanPham).count()
     tong_nguoi_dung = db.query(NguoiDung).count()
+    tong_don_hang = db.query(DonHang).count()
+    tong_doanh_thu = db.query(func.sum(DonHang.tong_tien)).filter(DonHang.trang_thai != 'Đã hủy').scalar() or 0
     
-    # Giả định đơn hàng và doanh thu là 0 nếu chưa có bảng
     return {
         "tong_san_pham": tong_san_pham,
         "tong_nguoi_dung": tong_nguoi_dung,
-        "tong_don_hang": 0,
-        "tong_doanh_thu": 0
+        "tong_don_hang": tong_don_hang,
+        "tong_doanh_thu": tong_doanh_thu
     }
