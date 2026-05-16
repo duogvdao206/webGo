@@ -9,6 +9,7 @@ import SanPhamPage from '../pages/SanPham';
 import GioiThieuPage from '../pages/GioiThieu';
 import GioHang from '../pages/GioHang';
 import ThanhToan from '../pages/ThanhToan';
+import DonHangCuaToi from '../pages/DonHangCuaToi';
 import { GioHangProvider } from '../components/GioHangContext';
 
 const AppRoutes = () => {
@@ -24,6 +25,7 @@ const AppRoutes = () => {
             <Route path="dang-ky" element={<DangKy />} />
             <Route path="gio-hang" element={<GioHang />} />
             <Route path="thanh-toan" element={<ThanhToan />} />
+            <Route path="don-hang" element={<DonHangCuaToi />} />
             <Route path="admin" element={<AdminDashboard />} />
           </Route>
         </Routes>

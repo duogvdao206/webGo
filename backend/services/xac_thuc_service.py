@@ -36,5 +36,6 @@ def xu_ly_dang_nhap(db: Session, thong_tin: DangNhapNguoiDung):
         "token_truy_cap": token, 
         "loai_token": "bearer",
         "vai_tro": nguoi_dung.vai_tro,
-        "ten_dang_nhap": nguoi_dung.ten_dang_nhap
+        "ten_dang_nhap": nguoi_dung.ten_dang_nhap,
+        "id": nguoi_dung.id
     }

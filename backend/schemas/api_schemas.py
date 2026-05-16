@@ -15,6 +15,7 @@ class Token(BaseModel):
     loai_token: str
     vai_tro: str
     ten_dang_nhap: str
+    id: int
 
 class TaoSanPham(BaseModel):
     ten_san_pham: str
@@ -48,6 +49,7 @@ class ChiTietDonHangBase(BaseModel):
     gia_don_vi: float
 
 class TaoDonHang(BaseModel):
+    nguoi_dung_id: Optional[int] = None
     ho_ten: str
     so_dien_thoai: str
     dia_chi: str

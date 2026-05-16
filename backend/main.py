@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from controllers import xac_thuc_controller, san_pham_controller, thong_ke_controller, upload_controller, cau_hinh_controller, don_hang_controller
 from configs.database import engine, Base
-from models import san_pham, nguoi_dung, cau_hinh, don_hang
+from models import san_pham, nguoi_dung, cau_hinh, don_hang, thong_bao
 
 # Đảm bảo thư mục static/uploads tồn tại
 import os
@@ -27,6 +27,10 @@ app.add_middleware(
 # Phục vụ file tĩnh (ảnh upload)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+from controllers import xac_thuc_controller, san_pham_controller, thong_ke_controller, upload_controller, cau_hinh_controller, don_hang_controller, thong_bao_controller
+
+# ... (rest of the file)
+
 # Đăng ký các router
 app.include_router(xac_thuc_controller.router)
 app.include_router(san_pham_controller.router)
@@ -34,6 +38,7 @@ app.include_router(thong_ke_controller.router)
 app.include_router(upload_controller.router)
 app.include_router(cau_hinh_controller.router)
 app.include_router(don_hang_controller.router)
+app.include_router(thong_bao_controller.router)
 
 from fastapi.responses import HTMLResponse
 
